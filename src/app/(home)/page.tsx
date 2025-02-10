@@ -1,9 +1,21 @@
-import Image from "next/image";
+import { HomeView } from "@/modules/home/ui/home-view";
+import { HydrateClient, trpc } from "../trpc/server";
+import { ErrorBoundary } from "react-error-boundary";
 
-export default function Home() {
+export const dynamic = "force-dynamic"; // force nextjs to treat this as a dynamic route, since we are prefetching data.
+
+interface PageProps {
+  searchParams: Promise<{
+    categoryId?: string;
+  }>;
+}
+const Page = async ({ searchParams }: PageProps) => {
+  const { categoryId } = await searchParams;
+  void trpc.categories.getMany.prefetch();
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-
-    </div>
+    <HydrateClient>
+      <HomeView categoryId={categoryId} />
+    </HydrateClient>
   );
 }
+export default Page;
